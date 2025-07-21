@@ -182,6 +182,12 @@ chmod +x docker/docker-build.sh  # Linux/macOS (sadece ilk kez)
 curl http://localhost:5000/health
 ```
 
+### ⚠️ Python 3.12+ Distutils Sorunu
+Python 3.12 ve sonrasında `distutils` modülü kaldırılmıştır. Ubuntu 24.04+ sistemlerde Docker Compose hatası alırsanız:
+```bash
+sudo apt install python3-setuptools
+```
+
 ### 2. Manuel Docker Komutları (Organize Yapı)
 ```bash
 # Build (root klasöründen)
