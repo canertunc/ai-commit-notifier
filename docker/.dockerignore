@@ -1,0 +1,66 @@
+# Ignore virtual environment
+venv/
+env/
+.venv/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Ignore logs
+*.log
+logs/
+app.log
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Ignore Git files
+.git/
+.gitignore
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Ignore environment files (will be mounted)
+.env
+.env.local
+.env.production
+
+# Ignore documentation
+README.md
+*.md
+docs/
+
+# Ignore test files
+tests/
+test_*
+*_test.py
+
+# Ignore development files
+.pytest_cache/
+.coverage
+.tox/
+
+# Ignore Docker files from being copied into image
+docker/
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+
+# Ignore Postman collections
+*.postman_collection.json 
