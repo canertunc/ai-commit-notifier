@@ -8,19 +8,10 @@ services:
     container_name: ai-commit-notifier
     ports:
       - "5000:5000"
-    environment:
-      # These will be loaded from .env file
-      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
-      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
-      - SLACK_CHANNELS=${SLACK_CHANNELS}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - REGEXP=${REGEXP}
-      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+    env_file:
+      - ../.env  # <-- BU SATIR YETERLİ
     volumes:
-      # Mount logs directory for persistence
       - ../logs:/app/logs
-      # Mount .env file
-      - ../.env:/app/.env:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
@@ -37,4 +28,4 @@ networks:
 
 volumes:
   app_logs:
-    driver: local 
+    driver: local
