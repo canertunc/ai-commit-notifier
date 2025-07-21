@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  ai-commit-notifier:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ai-commit-notifier
+    ports:
+      - "5000:5000"
+    environment:
+      # These will be loaded from .env file
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - SLACK_CHANNELS=${SLACK_CHANNELS}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REGEXP=${REGEXP}
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+    volumes:
+      # Mount logs directory for persistence
+      - ../logs:/app/logs
+      # Mount .env file
+      - ../.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ai-commit-network
+
+networks:
+  ai-commit-network:
+    driver: bridge
+
+volumes:
+  app_logs:
+    driver: local 

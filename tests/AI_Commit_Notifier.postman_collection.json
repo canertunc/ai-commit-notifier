@@ -1,0 +1,407 @@
+{
+  "info": {
+    "name": "AI Commit Notifier Tests",
+    "description": "Comprehensive test suite for AI Commit Notifier webhook endpoint",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "github_secret",
+      "value": "your-webhook-secret-key",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Valid Webhook with Signature",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Authentic GitHub webhook payload (based on real logs)",
+              "const payload = JSON.stringify({",
+              "  \"ref\": \"refs/heads/main\",",
+              "  \"before\": \"79621fd86ff2b193c1201753dc63075dfb87c1f4\",",
+              "  \"after\": \"911027c233a92ad5df703819196703b836522a8c\",",
+              "  \"repository\": {",
+              "    \"id\": 1021429694,",
+              "    \"name\": \"test-repo\",",
+              "    \"full_name\": \"testuser/test-repo\",",
+              "    \"private\": false,",
+              "    \"owner\": {",
+              "      \"name\": \"testuser\",",
+              "      \"email\": \"testuser@users.noreply.github.com\",",
+              "      \"login\": \"testuser\",",
+              "      \"id\": 72138765",
+              "    },",
+              "    \"html_url\": \"https://github.com/testuser/test-repo\",",
+              "    \"clone_url\": \"https://github.com/testuser/test-repo.git\",",
+              "    \"default_branch\": \"main\"",
+              "  },",
+              "  \"pusher\": {",
+              "    \"name\": \"testuser\",",
+              "    \"email\": \"testuser@users.noreply.github.com\"",
+              "  },",
+              "  \"sender\": {",
+              "    \"login\": \"testuser\",",
+              "    \"id\": 72138765,",
+              "    \"avatar_url\": \"https://avatars.githubusercontent.com/u/72138765?v=4\",",
+              "    \"html_url\": \"https://github.com/testuser\"",
+              "  },",
+              "  \"commits\": [",
+              "    {",
+              "      \"id\": \"911027c233a92ad5df703819196703b836522a8c\",",
+              "      \"tree_id\": \"0a2b6b0b8b61b4d16a3407cf5e6bef70c7951f7d\",",
+              "      \"message\": \"Merge pull request #123 from feature/new-feature\",",
+              "      \"timestamp\": \"2025-07-17T15:03:22+03:00\",",
+              "      \"url\": \"https://github.com/testuser/test-repo/commit/911027c233a92ad5df703819196703b836522a8c\",",
+              "      \"author\": {",
+              "        \"name\": \"Test User\",",
+              "        \"email\": \"testuser@users.noreply.github.com\",",
+              "        \"username\": \"testuser\"",
+              "      },",
+              "      \"committer\": {",
+              "        \"name\": \"GitHub\",",
+              "        \"email\": \"noreply@github.com\"",
+              "      },",
+              "      \"added\": [\"tests/new-test.js\"],",
+              "      \"removed\": [],",
+              "      \"modified\": [\"src/main.js\", \"README.md\"]",
+              "    }",
+              "  ],",
+              "  \"head_commit\": {",
+              "    \"id\": \"911027c233a92ad5df703819196703b836522a8c\",",
+              "    \"tree_id\": \"0a2b6b0b8b61b4d16a3407cf5e6bef70c7951f7d\",",
+              "    \"message\": \"Merge pull request #123 from feature/new-feature\",",
+              "    \"timestamp\": \"2025-07-17T15:03:22+03:00\",",
+              "    \"author\": {",
+              "      \"name\": \"Test User\",",
+              "      \"email\": \"testuser@users.noreply.github.com\",",
+              "      \"username\": \"testuser\"",
+              "    },",
+              "    \"modified\": [\"src/main.js\", \"README.md\"]",
+              "  }",
+              "});",
+              "",
+              "// Get secret from environment variable",
+              "const secret = pm.environment.get('github_secret') || pm.collectionVariables.get('github_secret');",
+              "",
+              "// Generate HMAC-SHA256 signature",
+              "const signature = CryptoJS.HmacSHA256(payload, secret).toString();",
+              "",
+              "// Set the payload as request body",
+              "pm.request.body.raw = payload;",
+              "",
+              "// Set the signature header",
+              "pm.request.headers.add({",
+              "  key: 'X-Hub-Signature-256',",
+              "  value: `sha256=${signature}`",
+              "});",
+              "",
+              "console.log('Payload:', payload);",
+              "console.log('Secret:', secret);",
+              "console.log('Signature:', signature);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-GitHub-Event",
+            "value": "push"
+          },
+          {
+            "key": "X-GitHub-Delivery",
+            "value": "12345678-1234-1234-1234-123456789012"
+          },
+          {
+            "key": "User-Agent",
+            "value": "GitHub-Hookshot/abc123"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/github-webhook",
+          "host": ["{{base_url}}"],
+          "path": ["github-webhook"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Invalid Signature Test",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Authentic payload but with WRONG signature for security test",
+              "const payload = JSON.stringify({",
+              "  \"ref\": \"refs/heads/main\",",
+              "  \"before\": \"911027c233a92ad5df703819196703b836522a8c\",",
+              "  \"after\": \"6d29de4cd03dce3d0e6ca15ac2c7d16f588bfcc3\",",
+              "  \"repository\": {",
+              "    \"id\": 1021429694,",
+              "    \"name\": \"test-repo\",",
+              "    \"full_name\": \"testuser/test-repo\",",
+              "    \"private\": false,",
+              "    \"owner\": {",
+              "      \"name\": \"testuser\",",
+              "      \"login\": \"testuser\",",
+              "      \"id\": 72138765",
+              "    },",
+              "    \"default_branch\": \"main\"",
+              "  },",
+              "  \"pusher\": {",
+              "    \"name\": \"testuser\",",
+              "    \"email\": \"testuser@users.noreply.github.com\"",
+              "  },",
+              "  \"commits\": [",
+              "    {",
+              "      \"id\": \"6d29de4cd03dce3d0e6ca15ac2c7d16f588bfcc3\",",
+              "      \"tree_id\": \"2c26993b34303661ec1ee8f1c2686a274e48061c\",",
+              "      \"message\": \"Merge pull request #456 from hotfix/security-patch\",",
+              "      \"timestamp\": \"2025-07-17T15:11:13+03:00\",",
+              "      \"author\": {",
+              "        \"name\": \"Test User\",",
+              "        \"email\": \"testuser@users.noreply.github.com\",",
+              "        \"username\": \"testuser\"",
+              "      },",
+              "      \"committer\": {",
+              "        \"name\": \"GitHub\",",
+              "        \"email\": \"noreply@github.com\"",
+              "      },",
+              "      \"added\": [],",
+              "      \"removed\": [],",
+              "      \"modified\": [\"src/main.js\", \"security/auth.py\"]",
+              "    }",
+              "  ],",
+              "  \"head_commit\": {",
+              "    \"id\": \"6d29de4cd03dce3d0e6ca15ac2c7d16f588bfcc3\",",
+              "    \"message\": \"Merge pull request #456 from hotfix/security-patch\",",
+              "    \"timestamp\": \"2025-07-17T15:11:13+03:00\",",
+              "    \"author\": {",
+              "      \"name\": \"Test User\",",
+              "      \"email\": \"testuser@users.noreply.github.com\"",
+              "    },",
+              "    \"modified\": [\"src/main.js\", \"security/auth.py\"]",
+              "  }",
+              "});",
+              "",
+              "// Set payload",
+              "pm.request.body.raw = payload;",
+              "",
+              "// Set WRONG signature deliberately",
+              "pm.request.headers.add({",
+              "  key: 'X-Hub-Signature-256',",
+              "  value: 'sha256=wrongsignatureforseuritytest123456789'",
+              "});",
+              "",
+              "console.log('Using WRONG signature for security test');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-GitHub-Event",
+            "value": "push"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/github-webhook",
+          "host": ["{{base_url}}"],
+          "path": ["github-webhook"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Missing Signature Header",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-GitHub-Event",
+            "value": "push"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ref\": \"refs/heads/main\",\n  \"repository\": {\n    \"name\": \"test-repo\",\n    \"full_name\": \"testuser/test-repo\"\n  },\n  \"commits\": [\n    {\n      \"id\": \"abc123\",\n      \"message\": \"test commit\",\n      \"author\": {\n        \"name\": \"Test User\",\n        \"email\": \"test@example.com\"\n      },\n      \"modified\": [\"test.txt\"]\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/github-webhook",
+          "host": ["{{base_url}}"],
+          "path": ["github-webhook"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Empty Payload Test",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Empty payload",
+              "const payload = '';",
+              "const secret = pm.environment.get('github_secret') || pm.collectionVariables.get('github_secret');",
+              "",
+              "// Generate signature for empty payload",
+              "const signature = CryptoJS.HmacSHA256(payload, secret).toString();",
+              "",
+              "pm.request.body.raw = payload;",
+              "pm.request.headers.add({",
+              "  key: 'X-Hub-Signature-256',",
+              "  value: `sha256=${signature}`",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-GitHub-Event",
+            "value": "push"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/github-webhook",
+          "host": ["{{base_url}}"],
+          "path": ["github-webhook"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. No Commits Test",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Authentic GitHub payload but with empty commits array",
+              "const payload = JSON.stringify({",
+              "  \"ref\": \"refs/heads/main\",",
+              "  \"before\": \"6d29de4cd03dce3d0e6ca15ac2c7d16f588bfcc3\",",
+              "  \"after\": \"6d29de4cd03dce3d0e6ca15ac2c7d16f588bfcc3\",",
+              "  \"repository\": {",
+              "    \"id\": 1021429694,",
+              "    \"name\": \"test-repo\",",
+              "    \"full_name\": \"testuser/test-repo\",",
+              "    \"private\": false,",
+              "    \"owner\": {",
+              "      \"name\": \"testuser\",",
+              "      \"login\": \"testuser\",",
+              "      \"id\": 72138765",
+              "    },",
+              "    \"default_branch\": \"main\"",
+              "  },",
+              "  \"pusher\": {",
+              "    \"name\": \"testuser\",",
+              "    \"email\": \"testuser@users.noreply.github.com\"",
+              "  },",
+              "  \"sender\": {",
+              "    \"login\": \"testuser\",",
+              "    \"id\": 72138765",
+              "  },",
+              "  \"commits\": [],",
+              "  \"head_commit\": null",
+              "});",
+              "",
+              "const secret = pm.environment.get('github_secret') || pm.collectionVariables.get('github_secret');",
+              "const signature = CryptoJS.HmacSHA256(payload, secret).toString();",
+              "",
+              "pm.request.body.raw = payload;",
+              "pm.request.headers.add({",
+              "  key: 'X-Hub-Signature-256',",
+              "  value: `sha256=${signature}`",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-GitHub-Event",
+            "value": "push"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/github-webhook",
+          "host": ["{{base_url}}"],
+          "path": ["github-webhook"]
+        }
+      },
+      "response": []
+    }
+  ]
+} 

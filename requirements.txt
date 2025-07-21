@@ -1,0 +1,6 @@
+flask==2.0.1
+requests==2.32.3
+openai==1.77.0
+python-dotenv==1.0.1
+slack-sdk==3.36.0
+werkzeug==2.0.1
