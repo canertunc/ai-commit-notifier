@@ -5,6 +5,7 @@ from pathlib import Path
 # Load environment variables from .env file in project root
 project_root = Path(__file__).parent.parent
 load_dotenv(project_root / '.env')
+print("sss: ",project_root)
 
 # Slack Bot Token (Environment variable'dan alınacak) - Çoklu kanal için
 SLACK_BOT_TOKEN = os.getenv('SLACK_BOT_TOKEN')
@@ -20,6 +21,18 @@ REGEXP = os.getenv('REGEXP')
 SLACK_CHANNELS = os.getenv('SLACK_CHANNELS')
 
 GITHUB_WEBHOOK_SECRET = os.getenv('GITHUB_WEBHOOK_SECRET')
+
+USER_PROMPT = f"""
+Aşağıda bir commit mesajı verilmiştir. Lütfen mesajda anlatılan değişikliğin **özünü** çıkar ve yalnızca mesajın gerçekten içerdiği bilgilere dayalı, sade ama bağlamsal bir özet ver.
+
+- Gereksiz tanımlar (örneğin "Merge", "Pull Request", "feature branch" gibi terimlerin ne olduğunu açıklamak) verme.
+- Eğer commit mesajı anlamlı değilse, bunu belirt ve nedenini açıkla.
+- Eğer anlamlıysa, yapılan işin **amacını ve etkisini** kısa ama teknik olarak açıkla.
+
+Commit mesajı:
+"""
+
+SYSTEM_PROMPT = "Sen yazılım geliştirici aktivitelerini analiz eden uzman bir asistansın. Kısa ve net cevaplar verirsin."
 
 # Configuration validation
 def validate_config():

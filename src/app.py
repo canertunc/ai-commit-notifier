@@ -3,7 +3,7 @@ import requests
 import logging
 import os
 from openai import OpenAI
-from config import SLACK_WEBHOOK_URL, OPENAI_API_KEY, REGEXP, SLACK_BOT_TOKEN, SLACK_CHANNELS, GITHUB_WEBHOOK_SECRET
+from config import SLACK_WEBHOOK_URL, OPENAI_API_KEY, REGEXP, SLACK_BOT_TOKEN, SLACK_CHANNELS, GITHUB_WEBHOOK_SECRET, USER_PROMPT, SYSTEM_PROMPT
 import re
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
@@ -133,11 +133,10 @@ def github_webhook():
                 # Her kanal için ayrı işlem yap
                 for channel in SLACK_CHANNELS:
                     # Kanal ismine göre farklı analyzer tipi seç
-                    analyzer_type = get_analyzer_for_channel(channel)
-                    ai_analysis = analyze_commit_with_ai(message, analyzer_type)
+                    ai_analysis = analyze_commit_with_ai(message)
                     
                     slack_text = f"""
-🚀 *Type* ({analyzer_type} - {channel})
+🚀 *Type* (Commit Analizi - {channel})
 👤 *Yazar:* {author}
 🔗 *Commit:* `{commit_id}`
 💬 *Mesaj:* {message}
@@ -168,17 +167,6 @@ def github_webhook():
         logger.error(f"Webhook processing error: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-def get_analyzer_for_channel(channel):
-    """
-    Kanal ismine göre analyzer tipi döndür - İstediğin gibi özelleştir
-    """
-    if "new-channel" in channel.lower() or "dev" in channel.lower():
-        return "Commit Analizi"
-    elif "social" in channel.lower():
-        return "Commit Analizi"
-    else:
-        return "Standart Analiz"
-
 def send_to_channel(text, channel):
     """
     Belirli bir kanala mesaj gönder - Bot API varsa onu kullan, yoksa webhook
@@ -205,7 +193,7 @@ def send_to_channel(text, channel):
         # Webhook kullan (fallback)
         return send_to_slack(text)
 
-def analyze_commit_with_ai(message, analyzer_type="Standart Analiz"):
+def analyze_commit_with_ai(message):
     """
     Analyze commit message using OpenAI GPT-4
     """
@@ -214,56 +202,23 @@ def analyze_commit_with_ai(message, analyzer_type="Standart Analiz"):
         return "AI analizi yapılamadı: OpenAI bağlantısı kurulamadı"
     
     try:
-        if "Commit Analizi" in analyzer_type:
-            prompt = f"""
-Aşağıda bir commit mesajı verilmiştir. Lütfen mesajda anlatılan değişikliğin **özünü** çıkar ve yalnızca mesajın gerçekten içerdiği bilgilere dayalı, sade ama bağlamsal bir özet ver.
-
-- Gereksiz tanımlar (örneğin "Merge", "Pull Request", "feature branch" gibi terimlerin ne olduğunu açıklamak) verme.
-- Eğer commit mesajı anlamlı değilse, bunu belirt ve nedenini açıkla.
-- Eğer anlamlıysa, yapılan işin **amacını ve etkisini** kısa ama teknik olarak açıkla.
-
-Commit mesajı:
-{message}
-"""
-            
-        elif "social" in analyzer_type:
-            prompt = f"""
-Aşağıda bir commit mesajı verilmiştir. Lütfen mesajda anlatılan değişikliğin **özünü** çıkar ve yalnızca mesajın gerçekten içerdiği bilgilere dayalı, sade ama bağlamsal bir özet ver.
-
-- Gereksiz tanımlar (örneğin "Merge", "Pull Request", "feature branch" gibi terimlerin ne olduğunu açıklamak) verme.
-- Eğer commit mesajı anlamlı değilse, bunu belirt ve nedenini açıkla.
-- Eğer anlamlıysa, yapılan işin **amacını ve etkisini** teknik olarak açıkla.
-
-Commit mesajı:
-{message}
-"""
-        else:
-            prompt = f"""
-Aşağıda bir commit mesajı verilmiştir. Lütfen mesajda anlatılan değişikliğin **özünü** çıkar ve yalnızca mesajın gerçekten içerdiği bilgilere dayalı, sade ama bağlamsal bir özet ver.
-
-- Gereksiz tanımlar (örneğin "Merge", "Pull Request", "feature branch" gibi terimlerin ne olduğunu açıklamak) verme.
-- Eğer commit mesajı anlamlı değilse, bunu belirt ve nedenini açıkla.
-- Eğer anlamlıysa, yapılan işin **amacını ve etkisini** kısa ama teknik olarak açıkla.
-
-Commit mesajı:
-{message}
-"""
+        USER_PROMPT += "\n" + message
         
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system", 
-                    "content": "Sen yazılım geliştirici aktivitelerini analiz eden uzman bir asistansın. Kısa ve net cevaplar verirsin."
+                    "content": SYSTEM_PROMPT
                 },
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": USER_PROMPT}
             ],
             max_tokens=300,
             temperature=0.3
         )
         
         analysis = response.choices[0].message.content.strip()
-        logger.info(f"AI analysis completed with {analyzer_type}")
+        logger.info(f"AI analysis completed")
         return analysis
         
     except Exception as e:
