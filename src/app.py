@@ -63,7 +63,7 @@ def verify_github_signature(request, secret):
     # HMAC SHA256 hesapla
     mac = hmac.new(secret.encode(), msg=payload, digestmod=hashlib.sha256)
     expected_signature = mac.hexdigest()
-    
+
     # Güvenli karşılaştırma
     return hmac.compare_digest(expected_signature, signature)
 
@@ -89,13 +89,13 @@ def github_webhook():
         
         data = request.json
         
-        # Debug: Log FULL incoming payload structure (WARNING: Can be large!)
+        # -Debug: Log FULL incoming payload structure (WARNING: Can be large!)
 
         # full_payload = json.dumps(data, indent=2, ensure_ascii=False)
         # logger.info(f"GitHub Webhook FULL Payload:\n{full_payload}")
         # logger.info(f"Payload size: {len(full_payload)} characters")
         
-        logger.info(f"Webhook received for repository: {data.get('repository', {}).get('name', 'unknown')}")
+        # logger.info(f"Webhook received for repository: {data.get('repository', {}).get('name', 'unknown')}")
         
         # Data validation
         if 'commits' not in data:
@@ -197,6 +197,7 @@ def analyze_commit_with_ai(message):
     """
     Analyze commit message using OpenAI GPT-4
     """
+    global USER_PROMPT
     if not openai_client:
         logger.error("OpenAI client not available")
         return "AI analizi yapılamadı: OpenAI bağlantısı kurulamadı"
