@@ -24,6 +24,18 @@ GitHub commit'lerinizi AI ile analiz edip Slack'e bildirim gönderen webhook sis
 - Environment variable configuration
 - Secure API key management
 
+---
+
+## Related Servers
+
+Bu sistemi Aşağıdaki ilgili repoları inceleyerek production ortamında aktif hale getirebilirsiniz:
+
+- **[Active MCP Server](https://github.com/canertunc/ai-commit-notifier-mcp-server)** - MCP protocol server
+- **[Active OAuth2 Server](https://github.com/canertunc/ai-commit-notifier-oauth2-server)** - OAuth2 authentication server  
+- **[Active AI Commit Notifier Server](https://github.com/canertunc/active-ai-commit-notifier-server)** - GitHub webhook’larını işleyen ve bu projeyi sunucuda çalıştırmak için hazırlanmış repo
+
+---
+
 ## 📋 Sistem Gereksinimleri
 
 - **Python 3.10+**
@@ -324,3 +336,4 @@ Bu mesaj formatı sayesinde:
 - **Direct link** ile commit'e kolay erişim
 
 ---
+
